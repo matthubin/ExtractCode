@@ -27,6 +27,14 @@ namespace ExtractCode.Annotation
             return this.Dislodge(result);
         }
 
+        /// <summary>
+        /// 对以下三种情况做了处理
+        /// 1. 删除行，如：//{这里是注释的}
+        /// 2. 删除行内注释，如： {代码}//{行内注释}
+        /// 3. 删除多行，如： /* {这里是多行注释} */
+        /// </summary>
+        /// <param name="content"></param>
+        /// <returns></returns>
         public virtual StringBuilder Dislodge(String content)
         {
             StringBuilder result = new StringBuilder();
@@ -34,7 +42,7 @@ namespace ExtractCode.Annotation
             String[] lines = this.getLines(content);
             foreach (string line in lines)
             {
-                if (Regex.Replace(line, "\\s*", string.Empty).Length == 0)
+                if (null == this.removeBlankLine(line))
                 {
                     continue;
                 }
@@ -42,12 +50,73 @@ namespace ExtractCode.Annotation
                 result.AppendLine(line);
             }
 
-            return result;
+            lines = this.getLines(result.ToString());
+
+            return this.removeMutliNoteLine(lines);
         }
 
         protected String[] getLines(string content)
         {
             return content.Split(new string[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        protected String removeBlankLine(String line)
+        {
+            if (Regex.IsMatch(line, PATTER_SINGLE))
+            {
+                return null;
+            }
+
+            return line;
+        }
+
+
+        private const String PATTER_MUTLI_START = @"^\s*/\*";
+        private const String PATTER_MUTLI_END = @"\*/\s*$";
+        private const String PATTER_SINGLE = @"^\s*//";
+        private const String PATTER_SINGLE_END = "//[^\"]*$";
+
+        /// <summary>
+        /// 删除多行注释，如 /* ........  */
+        /// </summary>
+        /// <param name="lines"></param>
+        /// <returns></returns>
+        protected StringBuilder removeMutliNoteLine(String[] lines)
+        {
+            StringBuilder result = new StringBuilder();
+            Boolean isMutliAnnotation = false;//是否是多行注释
+            foreach (String line in lines)
+            {
+                if (isMutliAnnotation)
+                {
+                    if (Regex.IsMatch(line, PATTER_MUTLI_END))
+                    {
+                        isMutliAnnotation = false;
+                    }
+                    continue;
+                }
+
+                if (Regex.IsMatch(line, PATTER_MUTLI_START))
+                {
+                    isMutliAnnotation = true;
+                    if (Regex.IsMatch(line, PATTER_MUTLI_END))
+                    {
+                        isMutliAnnotation = false;
+                    }
+                    continue;
+                }
+
+                if (Regex.IsMatch(line, PATTER_SINGLE))
+                {
+                    continue;
+                }
+
+                String temp = line;
+                temp = Regex.Replace(temp, PATTER_SINGLE_END, String.Empty);
+
+                result.AppendLine(temp);
+            }
+            return result;
         }
     }
 }

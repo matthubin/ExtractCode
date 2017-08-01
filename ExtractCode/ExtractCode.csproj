@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="Annotation\BaseAnnotation.cs" />
     <Compile Include="Annotation\JavaAnnotation.cs" />
+    <Compile Include="Annotation\JsAnnotation.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

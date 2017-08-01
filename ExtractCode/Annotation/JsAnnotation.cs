@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace ExtractCode.Annotation
 {
-    public class JavaAnnotation : BaseAnnotation
+    public class JsAnnotation : BaseAnnotation
     {
     }
 }

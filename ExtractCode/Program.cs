@@ -34,6 +34,16 @@ namespace ExtractCode
 
                 foreach (DirectoryInfo directory in directoryInfo.GetDirectories())
                 {
+                    if (directory.FullName.ToLower().Contains("Packages")
+                        || directory.FullName.ToLower().Contains(".git")
+                        || directory.FullName.ToLower().Contains(".idea")
+                        || directory.FullName.ToLower().Contains("node_modules")
+                        || directory.FullName.ToLower().Contains("bower_components")
+                        || directory.FullName.ToLower().Contains("build")
+                        || directory.FullName.ToLower().Contains("dist"))
+                    {
+                        continue;
+                    }
                     queue.Enqueue(directory);
                 }
 
@@ -44,6 +54,9 @@ namespace ExtractCode
                     {
                         case ".java":
                             annotation = new JavaAnnotation();
+                            break;
+                        case ".js":
+                            annotation = new JsAnnotation();
                             break;
                     }
 
@@ -61,6 +74,12 @@ namespace ExtractCode
                     }
 
                     Console.WriteLine(string.Format("提取成功：[{0}]", fileInfo.FullName));
+                    String[] lines = fileBuilder.ToString()
+                        .Split(new string[] {"\r\n", "\n"}, StringSplitOptions.RemoveEmptyEntries);
+                    if (lines.Length == 0 || lines.Any(x => x.Length > 500))
+                    {
+                        continue;
+                    }
                     builder.AppendLine(fileBuilder.ToString());
                 }
             }
